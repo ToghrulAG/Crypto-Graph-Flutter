@@ -15,7 +15,7 @@ class CryptoRepository {
 
       _cachedCoins = rawData
           .map((json) => CryptoCoin.fromJson(json as Map<String, dynamic>))
-          .where((coin) => coin.symbol.endsWith('USDT')) // Оставляем только пары к доллару
+          .where((coin) => coin.symbol.endsWith('USDT')) 
           .toList();
     }
     final startIndex = (page - 1) * limit;
