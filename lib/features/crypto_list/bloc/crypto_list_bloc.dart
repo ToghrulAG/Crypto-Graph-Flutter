@@ -2,14 +2,22 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/crypto_list_event.dart';
 import '../bloc/crypto_list_state.dart';
 import '../../../data/repository/crypto_repository.dart';
+import 'dart:async';
 
 class CryptoListBloc extends Bloc<CryptoListEvent, CryptoListState> {
   final CryptoRepository repository;
   int _currentPage = 1;
+  Timer? _timer;
 
   CryptoListBloc({required this.repository}) : super(CryptoListLoading()) {
     on<LoadCoins>(_onLoadCoins);
     on<RefreshCoins>(_onRefreshCoin);
+
+    _timer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      
+      add(RefreshCoins());
+      print('Таймер сработал! Обновляем цены...');
+    });
   }
 
   Future<void> _onLoadCoins(
@@ -36,12 +44,17 @@ class CryptoListBloc extends Bloc<CryptoListEvent, CryptoListState> {
   ) async {
     try {
       _currentPage = 1;
-      emit(CryptoListLoading());
+      // emit(CryptoListLoading());
       final freshCoins = await repository.getCoins(page: _currentPage);
       emit(CryptoListLoaded(coins: freshCoins));
-    } catch (e, stackTrace) {
-    
+    } catch (e) {
       emit(const CryptoListError(message: 'Failed to refresh data'));
     }
+  }
+
+  @override
+  Future<void> close() {
+    _timer?.cancel();
+    return super.close();
   }
 }
