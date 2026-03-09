@@ -8,23 +8,25 @@ class CryptoRepository {
 
   List<CryptoCoin> _cachedCoins = [];
 
-  Future<List<CryptoCoin>> getCoins({int page = 1, int limit = 20}) async {
-
-    if(_cachedCoins.isEmpty) {
+  Future<List<CryptoCoin>> getCoins({
+    int page = 1,
+    int limit = 20,
+    bool forceRefresh = true,
+  }) async {
+    if (_cachedCoins.isEmpty || forceRefresh) {
       final rawData = await apiClient.getTickers();
 
       _cachedCoins = rawData
           .map((json) => CryptoCoin.fromJson(json as Map<String, dynamic>))
-          .where((coin) => coin.symbol.endsWith('USDT')) 
+          .where((coin) => coin.symbol.endsWith('USDT'))
           .toList();
     }
     final startIndex = (page - 1) * limit;
 
-    if(startIndex >= _cachedCoins.length) {
+    if (startIndex >= _cachedCoins.length) {
       return [];
     }
-    
-    return _cachedCoins.skip(startIndex).take(limit).toList();
 
+    return _cachedCoins.skip(startIndex).take(limit).toList();
   }
 }
